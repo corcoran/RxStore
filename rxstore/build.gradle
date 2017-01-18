@@ -37,7 +37,7 @@ targetCompatibility = 1.6
 
 dependencies {
   compile rootProject.ext.rxJava
-  compile rootProject.ext.jetbrainsAnnotations
+  compile rootProject.ext.jsr305Annotations
 
   testCompile rootProject.ext.junit
   testCompile rootProject.ext.truth

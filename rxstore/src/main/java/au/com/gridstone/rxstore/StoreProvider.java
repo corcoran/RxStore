@@ -27,14 +27,13 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
 import rx.Single;
 import rx.SingleSubscriber;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
@@ -105,11 +104,11 @@ public final class StoreProvider {
     return file;
   }
 
-  public @NotNull <T> ValueStore<T> valueStore(@NotNull String key, @NotNull Type type) {
+  public @Nonnull <T> ValueStore<T> valueStore(@Nonnull String key, @Nonnull Type type) {
     return new ValueStore<T>(getFileForStore(key), converter, type, scheduler);
   }
 
-  @NotNull public <T> ListStore<T> listStore(@NotNull String key, @NotNull Type type) {
+  @Nonnull public <T> ListStore<T> listStore(@Nonnull String key, @Nonnull Type type) {
     return new ListStore<T>(getFileForStore(key), converter, new ListType(type), scheduler);
   }
 
@@ -121,7 +120,7 @@ public final class StoreProvider {
    * {@link AndroidBuilder#inDir(String) inDir()} before {@link AndroidBuilder#using(Converter)
    * using()}.
    */
-  @NotNull public static AndroidBuilder withContext(@NotNull Context context) {
+  @Nonnull public static AndroidBuilder withContext(@Nonnull Context context) {
     return new AndroidBuilder(context);
   }
 
@@ -129,7 +128,7 @@ public final class StoreProvider {
    * Start creating a {@link StoreProvider} that will utilise the specified directory
    * for storage.
    */
-  @NotNull public static Builder with(@NotNull File directory) {
+  @Nonnull public static Builder with(@Nonnull File directory) {
     return new Builder(directory);
   }
 
@@ -152,7 +151,7 @@ public final class StoreProvider {
      * override this behaviour (such as for testing with {@link Schedulers#immediate()}), then
      * you can specify a custom Scheduler here.
      */
-    @NotNull public Builder schedulingWith(@NotNull Scheduler scheduler) {
+    @Nonnull public Builder schedulingWith(@Nonnull Scheduler scheduler) {
       assertNotNull(scheduler, "scheduler");
       this.scheduler = scheduler;
       return this;
@@ -164,7 +163,7 @@ public final class StoreProvider {
      * <p>
      * This will also finish initializing this StoreProvider instance.
      */
-    public @NotNull StoreProvider using(@NotNull Converter converter) {
+    public @Nonnull StoreProvider using(@Nonnull Converter converter) {
       assertNotNull(converter, "converter");
       if (scheduler == null) scheduler = Schedulers.from(Executors.newSingleThreadExecutor());
       return new StoreProvider(directory, converter, scheduler);
@@ -180,7 +179,7 @@ public final class StoreProvider {
     private String directoryName = "";
     private Scheduler scheduler;
 
-    private AndroidBuilder(@NotNull Context context) {
+    private AndroidBuilder(@Nonnull Context context) {
       assertNotNull(context, "context");
       this.context = context.getApplicationContext();
     }
@@ -191,7 +190,7 @@ public final class StoreProvider {
      * override this behaviour (such as for testing with {@link Schedulers#immediate()}), then
      * you can specify a custom Scheduler here.
      */
-    @NotNull public AndroidBuilder schedulingWith(@NotNull Scheduler scheduler) {
+    @Nonnull public AndroidBuilder schedulingWith(@Nonnull Scheduler scheduler) {
       assertNotNull(scheduler, "scheduler");
       this.scheduler = scheduler;
       return this;
@@ -201,7 +200,7 @@ public final class StoreProvider {
      * Specify a subdirectory that this {@link StoreProvider} will use to save and
      * restore objects.
      */
-    @NotNull public AndroidBuilder inDir(@NotNull String directory) {
+    @Nonnull public AndroidBuilder inDir(@Nonnull String directory) {
       assertNotNull(directory, "directory");
       this.directoryName = directory;
       return this;
@@ -213,7 +212,7 @@ public final class StoreProvider {
      * <p>
      * This will also finish initializing this StoreProvider instance.
      */
-    public @NotNull StoreProvider using(@NotNull Converter converter) {
+    public @Nonnull StoreProvider using(@Nonnull Converter converter) {
       assertNotNull(converter, "converter");
       File directory = context.getDir(directoryName, Context.MODE_PRIVATE);
       if (scheduler == null) scheduler = Schedulers.from(Executors.newSingleThreadExecutor());
@@ -247,7 +246,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<T> observePut(@NotNull final T value) {
+    @Nonnull public Single<T> observePut(@Nonnull final T value) {
       return Single.create(new Single.OnSubscribe<T>() {
         @Override public void call(final SingleSubscriber<? super T> subscriber) {
           try {
@@ -273,7 +272,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    public void put(@NotNull T value) {
+    public void put(@Nonnull T value) {
       observePut(value).subscribe(errorThrowingObserver);
     }
 
@@ -287,7 +286,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<T> get() {
+    @Nonnull public Single<T> get() {
       return Single.create(new Single.OnSubscribe<T>() {
         @Override public void call(final SingleSubscriber<? super T> subscriber) {
           try {
@@ -324,7 +323,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this observable will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Observable<T> asObservable() {
+    @Nonnull public Observable<T> asObservable() {
       return updateSubject.asObservable()
           .startWith(get().toObservable())
           .onBackpressureLatest()
@@ -337,7 +336,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<T> observeClear() {
+    @Nonnull public Single<T> observeClear() {
       return Single.create(new Single.OnSubscribe<T>() {
         @Override public void call(final SingleSubscriber<? super T> subscriber) {
           try {
@@ -381,7 +380,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<T> observeDelete() {
+    @Nonnull public Single<T> observeDelete() {
       return Single.create(new Single.OnSubscribe<T>() {
         @Override public void call(final SingleSubscriber<? super T> subscriber) {
           try {
@@ -448,7 +447,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observePut(@NotNull final List<T> value) {
+    @Nonnull public Single<List<T>> observePut(@Nonnull final List<T> value) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -474,7 +473,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    public void put(@NotNull List<T> value) {
+    public void put(@Nonnull List<T> value) {
       observePut(value).subscribe(errorThrowingObserver);
     }
 
@@ -488,7 +487,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> get() {
+    @Nonnull public Single<List<T>> get() {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -512,7 +511,7 @@ public final class StoreProvider {
      * Synchronously get the list associated with this store, or an immutable empty
      * {@code List} if this store has no items.
      */
-    @NotNull public List<T> getBlocking() {
+    @Nonnull public List<T> getBlocking() {
       return get().toBlocking().value();
     }
 
@@ -526,7 +525,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this observable will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Observable<List<T>> asObservable() {
+    @Nonnull public Observable<List<T>> asObservable() {
       return updateSubject.asObservable()
           .startWith(get().toObservable())
           .onBackpressureLatest()
@@ -539,7 +538,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeClear() {
+    @Nonnull public Single<List<T>> observeClear() {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -576,7 +575,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeAddToList(@NotNull final T value) {
+    @Nonnull public Single<List<T>> observeAddToList(@Nonnull final T value) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -608,7 +607,7 @@ public final class StoreProvider {
      * <p>
      * This operation will also create a list if it currently does not exist.
      */
-    public void addToList(@NotNull T value) {
+    public void addToList(@Nonnull T value) {
       observeAddToList(value).subscribe(errorThrowingObserver);
     }
 
@@ -618,7 +617,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeRemoveFromList(@NotNull final T value) {
+    @Nonnull public Single<List<T>> observeRemoveFromList(@Nonnull final T value) {
       return observeRemoveFromList(new RemovePredicateFunc<T>() {
         @Override public boolean shouldRemove(T valueToRemove) {
           return value.equals(valueToRemove);
@@ -629,7 +628,7 @@ public final class StoreProvider {
     /**
      * Remove an item from the list if it exists.
      */
-    public void removeFromList(@NotNull T value) {
+    public void removeFromList(@Nonnull T value) {
       observeRemoveFromList(value).subscribe(errorThrowingObserver);
     }
 
@@ -640,7 +639,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeRemoveFromList(@NotNull final RemovePredicateFunc<T> predicateFunc) {
+    @Nonnull public Single<List<T>> observeRemoveFromList(@Nonnull final RemovePredicateFunc<T> predicateFunc) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -681,7 +680,7 @@ public final class StoreProvider {
     /**
      * Remove an item from the list that the provided predicate returns true for.
      */
-    public void removeFromList(@NotNull final RemovePredicateFunc<T> predicateFunc) {
+    public void removeFromList(@Nonnull final RemovePredicateFunc<T> predicateFunc) {
       observeRemoveFromList(predicateFunc).subscribe(errorThrowingObserver);
     }
 
@@ -691,7 +690,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeRemoveFromList(final int position) {
+    @Nonnull public Single<List<T>> observeRemoveFromList(final int position) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -726,8 +725,8 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeReplace(@NotNull final T value,
-        @NotNull final ReplacePredicateFunc<T> predicateFunc) {
+    @Nonnull public Single<List<T>> observeReplace(@Nonnull final T value,
+        @Nonnull final ReplacePredicateFunc<T> predicateFunc) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -769,7 +768,7 @@ public final class StoreProvider {
     /**
      * Replace the first item in the list that the provided predicate returns true for.
      */
-    public void replace(@NotNull T value, @NotNull ReplacePredicateFunc<T> predicateFunc) {
+    public void replace(@Nonnull T value, @Nonnull ReplacePredicateFunc<T> predicateFunc) {
       observeReplace(value, predicateFunc).subscribe(errorThrowingObserver);
     }
 
@@ -780,8 +779,8 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeAddOrReplace(@NotNull final T value,
-        @NotNull final ReplacePredicateFunc<T> predicateFunc) {
+    @Nonnull public Single<List<T>> observeAddOrReplace(@Nonnull final T value,
+        @Nonnull final ReplacePredicateFunc<T> predicateFunc) {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
@@ -830,7 +829,7 @@ public final class StoreProvider {
      * Replace the first item in the list that the provided predicate returns true for with the
      * provided item. If no matching item is found, add the provided item into the list.
      */
-    public void addOrReplace(@NotNull T value, @NotNull ReplacePredicateFunc<T> predicateFunc) {
+    public void addOrReplace(@Nonnull T value, @Nonnull ReplacePredicateFunc<T> predicateFunc) {
       observeAddOrReplace(value, predicateFunc).subscribe(errorThrowingObserver);
     }
 
@@ -850,7 +849,7 @@ public final class StoreProvider {
      * The {@link Scheduler} used for this operation will be the one specified in
      * {@link Builder#schedulingWith(Scheduler) schedulingWith()}.
      */
-    @NotNull public Single<List<T>> observeDelete() {
+    @Nonnull public Single<List<T>> observeDelete() {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
