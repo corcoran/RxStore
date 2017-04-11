@@ -257,9 +257,13 @@ public final class StoreProvider {
 
             runInWriteLock(readWriteLock, new Runnable() {
               @Override public void run() {
-                converterWrite(value, converter, type, file);
-                subscriber.onSuccess(value);
-                updateSubject.onNext(value);
+                try {
+                  converterWrite(value, converter, type, file);
+                  subscriber.onSuccess(value);
+                  updateSubject.onNext(value);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -347,9 +351,13 @@ public final class StoreProvider {
 
             runInWriteLock(readWriteLock, new Runnable() {
               @Override public void run() {
-                converterWrite(null, converter, type, file);
-                subscriber.onSuccess(null);
-                updateSubject.onNext(null);
+                try {
+                  converterWrite(null, converter, type, file);
+                  subscriber.onSuccess(null);
+                  updateSubject.onNext(null);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -458,9 +466,13 @@ public final class StoreProvider {
 
             runInWriteLock(readWriteLock, new Runnable() {
               @Override public void run() {
-                converterWrite(value, converter, type, file);
-                subscriber.onSuccess(value);
-                updateSubject.onNext(value);
+                try {
+                  converterWrite(value, converter, type, file);
+                  subscriber.onSuccess(value);
+                  updateSubject.onNext(value);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -550,9 +562,13 @@ public final class StoreProvider {
             runInWriteLock(readWriteLock, new Runnable() {
               @Override public void run() {
                 List<T> emptyList = Collections.emptyList();
-                converterWrite(emptyList, converter, type, file);
-                subscriber.onSuccess(emptyList);
-                updateSubject.onNext(emptyList);
+                try {
+                  converterWrite(emptyList, converter, type, file);
+                  subscriber.onSuccess(emptyList);
+                  updateSubject.onNext(emptyList);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -593,9 +609,13 @@ public final class StoreProvider {
                 result.addAll(originalList);
                 result.add(value);
 
-                converterWrite(result, converter, type, file);
-                subscriber.onSuccess(result);
-                updateSubject.onNext(result);
+                try {
+                  converterWrite(result, converter, type, file);
+                  subscriber.onSuccess(result);
+                  updateSubject.onNext(result);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -668,9 +688,13 @@ public final class StoreProvider {
                   modifiedList.remove(indexOfItemToRemove);
                 }
 
-                converterWrite(modifiedList, converter, type, file);
-                subscriber.onSuccess(modifiedList);
-                updateSubject.onNext(modifiedList);
+                try {
+                  converterWrite(modifiedList, converter, type, file);
+                  subscriber.onSuccess(modifiedList);
+                  updateSubject.onNext(modifiedList);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -707,9 +731,13 @@ public final class StoreProvider {
                 List<T> modifiedList = new ArrayList<T>(originalList);
                 modifiedList.remove(position);
 
-                converterWrite(modifiedList, converter, type, file);
-                subscriber.onSuccess(modifiedList);
-                updateSubject.onNext(modifiedList);
+                try {
+                  converterWrite(modifiedList, converter, type, file);
+                  subscriber.onSuccess(modifiedList);
+                  updateSubject.onNext(modifiedList);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -757,9 +785,13 @@ public final class StoreProvider {
                   modifiedList.add(indexOfItemToReplace, value);
                 }
 
-                converterWrite(modifiedList, converter, type, file);
-                subscriber.onSuccess(modifiedList);
-                updateSubject.onNext(modifiedList);
+                try {
+                  converterWrite(modifiedList, converter, type, file);
+                  subscriber.onSuccess(modifiedList);
+                  updateSubject.onNext(modifiedList);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -817,9 +849,13 @@ public final class StoreProvider {
                   modifiedList.add(indexOfItemToReplace, value);
                 }
 
-                converterWrite(modifiedList, converter, type, file);
-                subscriber.onSuccess(modifiedList);
-                updateSubject.onNext(modifiedList);
+                try {
+                  converterWrite(modifiedList, converter, type, file);
+                  subscriber.onSuccess(modifiedList);
+                  updateSubject.onNext(modifiedList);
+                } catch (IOException e) {
+                  subscriber.onError(e);
+                }
               }
             });
           } catch (Exception e) {
@@ -976,10 +1012,15 @@ public final class StoreProvider {
     }
   }
 
-  private static <T> void converterWrite(T value, Converter converter, Type type, File file) {
+  private static <T> void converterWrite(T value, Converter converter, Type type, File file)
+          throws IOException {
     File tmpFile = new File(file.getAbsolutePath() + ".tmp");
     converter.write(value, type, tmpFile);
+
+    // Blindly try to delete an existing file with the same name since renameTo will fail
+    // to overwrite on some platforms
     file.delete();
-    tmpFile.renameTo(file);
+    boolean success = tmpFile.renameTo(file);
+    if (!success) throw new IOException("Rename operation on tmp file failed!");
   }
 }
