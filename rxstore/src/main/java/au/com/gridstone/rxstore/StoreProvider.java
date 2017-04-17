@@ -98,7 +98,9 @@ public final class StoreProvider {
 
     if (!file.exists()) {
       try {
-        if (!file.createNewFile()) throw new IOException("Could not create file for store.");
+        if (!file.createNewFile())
+            throw new IOException(String.format("Could not create file for store (%s)",
+                    file.getAbsolutePath()));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -820,7 +822,9 @@ public final class StoreProvider {
       return Single.create(new Single.OnSubscribe<List<T>>() {
         @Override public void call(final SingleSubscriber<? super List<T>> subscriber) {
           try {
-            if (!file.exists()) throw new IOException("This store has already been deleted!");
+            if (!file.exists())
+              throw new IOException(String.format("This store has already been deleted! (%s)",
+                      file.getAbsolutePath()));
 
             runInWriteLock(readWriteLock, new Runnable() {
               @Override public void run() {
@@ -1021,6 +1025,7 @@ public final class StoreProvider {
     // to overwrite on some platforms
     file.delete();
     boolean success = tmpFile.renameTo(file);
-    if (!success) throw new IOException("Rename operation on tmp file failed!");
+    if (!success) throw new IOException(String.format("Rename operation on tmp file failed! (%s -> %s)",
+            tmpFile.getAbsolutePath(), file.getAbsolutePath()));
   }
 }
